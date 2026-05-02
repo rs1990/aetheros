@@ -1,0 +1,11 @@
+[package]
+name    = "aether-usdf"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+aether-core = { workspace = true }
+hashbrown   = { workspace = true }
+serde       = { workspace = true }
+thiserror   = { workspace = true }
+sha2        = { workspace = true }

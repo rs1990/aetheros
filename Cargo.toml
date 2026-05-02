@@ -1,0 +1,42 @@
+[workspace]
+resolver = "2"
+members = [
+    "aether-core",
+    "aether-hal",
+    "aether-usdf",
+    "aether-agents",
+    "aether-cluster",
+]
+
+[workspace.package]
+version     = "0.1.0"
+edition     = "2021"
+authors     = ["AetherOS Project"]
+license     = "MIT"
+rust-version = "1.78"
+
+[workspace.dependencies]
+aether-core    = { path = "aether-core" }
+aether-hal     = { path = "aether-hal" }
+aether-usdf    = { path = "aether-usdf" }
+aether-agents  = { path = "aether-agents" }
+aether-cluster = { path = "aether-cluster" }
+
+# Pure-Rust, no_std-compatible utilities
+bitflags   = { version = "2", default-features = false }
+zerocopy   = { version = "0.7", default-features = false, features = ["derive"] }
+spin       = { version = "0.9", default-features = false }  # no_std spinlocks
+
+# Std-allowed crates (agents / cluster layer)
+crossbeam  = { version = "0.8" }
+hashbrown  = { version = "0.14" }
+serde      = { version = "1", features = ["derive"] }
+serde_json = { version = "1" }
+tokio      = { version = "1", features = ["full"] }
+uuid       = { version = "1", features = ["v4"] }
+rand       = { version = "0.8" }
+aes-gcm    = { version = "0.10" }         # Persona overlay encryption
+sha2       = { version = "0.10" }
+bytes      = { version = "1" }
+thiserror  = { version = "1" }
+tracing    = { version = "0.1" }

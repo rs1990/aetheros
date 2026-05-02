@@ -1,0 +1,10 @@
+[package]
+name    = "aether-hal"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+aether-core = { workspace = true }
+bitflags    = { workspace = true }
+hashbrown   = { workspace = true }
+thiserror   = { workspace = true }

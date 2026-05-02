@@ -1,0 +1,18 @@
+[package]
+name    = "aether-core"
+version.workspace = true
+edition.workspace = true
+
+[features]
+default = ["alloc"]
+alloc   = []
+
+[dependencies]
+bitflags = { workspace = true }
+spin     = { workspace = true }
+zerocopy = { workspace = true }
+
+[profile.release]
+opt-level = 3
+lto       = true
+panic     = "abort"

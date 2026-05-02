@@ -1,0 +1,23 @@
+# Rust build artifacts
+/target/
+**/target/
+Cargo.lock
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Env / secrets
+.env
+.env.*
+*.pem
+*.key
+
+# Compiled binaries
+*.elf
+*.bin
+*.img
+*.iso
