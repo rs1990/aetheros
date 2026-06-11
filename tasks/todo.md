@@ -13,9 +13,13 @@ production-readiness gaps and feature improvements, clean up junk, document ever
 - [x] OptimaLLM — Go proxy/daemon/CLI — PROJECT_REVIEW.md done (2 CRIT bugs)
 - [x] SafetyEye — CV/PPE detection platform — PROJECT_REVIEW.md done (3 CRIT defects)
 - [x] SitAware — FastAPI backend + Next.js frontend — PROJECT_REVIEW.md done
-- [ ] slm-forge — Python ML fine-tuning tool — review agent died at session limit, RELAUNCHED
+- [x] slm-forge — PROJECT_REVIEW.md done (3 HIGH: publish format bug, lora+ crash, multi-GPU broken)
 
-## 9/10 reviews complete. Master doc: PORTFOLIO_REVIEW.md at root.
+## ALL 10/10 reviews complete. Master doc: PORTFOLIO_REVIEW.md at root.
+
+## Follow-up work
+- [x] OptimaLLM: all review bugs fixed (see OptimaLLM/tasks/fix-plan.md) — tests green, pushed
+- [x] SovereignGrid: new P2P LLM inference grid scaffolded (orchestrator + daemon + Supabase schema)
 
 ## Per-project deliverable
 `PROJECT_REVIEW.md` in each project root containing:
