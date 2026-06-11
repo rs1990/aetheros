@@ -1,3 +1,0 @@
-Test deployment trigger
-Timestamp: 2026-05-26
-Monitoring hook should activate on push.
