@@ -1,4 +1,4 @@
-const BASE = "http://localhost:8001";
+const BASE = import.meta.env.DEV ? "http://localhost:8001" : "";
 
 async function get<T>(path: string): Promise<T> {
   const res = await fetch(`${BASE}${path}`);

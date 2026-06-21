@@ -1,0 +1,26 @@
+databases:
+  - name: supply-chain-db
+    databaseName: supply_chain
+    user: supply_chain_user
+    plan: free
+
+services:
+  - type: web
+    name: supply-chain-intel
+    runtime: python
+    plan: free
+    buildCommand: |
+      pip install -r requirements.txt &&
+      cd frontend && npm install && npm run build
+    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: supply-chain-db
+          property: connectionString
+      - key: USE_MOCK_DATA
+        value: "true"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: PYTHON_VERSION
+        value: "3.11.0"
