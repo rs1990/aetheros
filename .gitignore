@@ -1,4 +1,8 @@
-.claude/
+.claude/*
+!.claude/skills/
+.claude/skills/*
+!.claude/skills/fable-*/
+!.claude/agents/
 .DS_Store
 node_modules/
 *.log

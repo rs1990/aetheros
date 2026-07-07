@@ -1,3 +1,26 @@
+# Fable Workflow System — Skills + Agents (2026-07-06)
+
+Goal: encode Fable's problem-solving workflow as reusable skills + agents so
+Sonnet/Opus sessions reproduce it across all repos.
+
+- [x] Master orchestrator skill: `fable-workflow` (phase loop + delegation rules)
+- [x] Phase skill: `fable-frame` (understand problem before acting)
+- [x] Phase skill: `fable-decompose` (task breakdown)
+- [x] Phase skill: `fable-implement` (root-cause, minimal-diff building)
+- [x] Phase skill: `fable-verify` (prove it works end-to-end)
+- [x] Phase skill: `fable-evaluate` (self-review rubric)
+- [x] Phase skill: `fable-debug` (reproduce → isolate → fix loop)
+- [x] Phase skill: `fable-harden` (production-readiness checklist)
+- [x] Agent: `fable-architect` (opus — planning)
+- [x] Agent: `fable-implementer` (sonnet — execution)
+- [x] Agent: `fable-evaluator` (opus — review)
+- [x] Agent: `fable-debugger` (sonnet — bug fixing)
+- [x] Agent: `fable-verifier` (sonnet — verification)
+- [x] Agent: `fable-hardener` (opus — production audit)
+- [x] Commit + push
+
+---
+
 # Portfolio Review — All Projects (2026-06-09)
 
 Goal: review architecture + implementation of every project, find bugs, identify
