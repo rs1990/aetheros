@@ -1,7 +1,8 @@
 # Portfolio Data — rs1990
 
 Generated: 2026-06-24  
-Source: Local code analysis of all 11 repos.
+Last Synced: 2026-07-15  
+Source: Local code analysis of all 11 repos + AetherOS (12 total).
 
 ---
 
@@ -96,7 +97,7 @@ Tier 4 — Caching (Redis via Upstash)
 - 25+ AI-powered features
 - 3 LLM providers (Claude 3.5 default, Gemini 2.0, GPT-4 Turbo fallback) — all streaming
 - 12 data sources (Yahoo Finance, Alpaca, SEC EDGAR, CoinGecko, FRED, Tavily, StockTwits, Reddit, FINRA, Finnhub, Senate, House trades)
-- 310 backend tests passing (README says 242; CLAUDE.md notes 310/310 as of 2026-05-18)
+- 335 backend tests passing (up from 310 across 3 commits since 2026-06-26; README still says 242, now stale)
 - 0 TypeScript errors
 - P99 latency <2s quotes, <500ms technicals, <1s per AI chunk
 - 3,000 Monte Carlo simulations for portfolio optimizer
@@ -123,7 +124,7 @@ Tier 4 — Caching (Redis via Upstash)
 8. Institutional data integration: 13-F, Form 4 insider trades, Congress trades, FINRA short interest, dark pool flow — all from free government sources
 
 **Honest Status:**  
-Production-ready MVP. Core features fully tested (310/310 tests, 0 TS errors, deployed on Vercel + Render + Supabase). Two bugs resolved post-sprint (institutional page slowness, web research timeout). One known deferred: vol surface crash guard (mitigation added, root fix pending). Pre-launch blockers requiring user action: Stripe payment setup, Polygon.io license, Resend domain, legal ToS/Privacy Policy, Supabase migrations 010–015 must run before bot/live endpoints activate, ~9-week paper-proving window needed before go-live authorization.
+Production-ready MVP. Core features fully tested (335/335 tests, 0 TS errors, deployed on Vercel + Render + Supabase). Two bugs resolved post-sprint (institutional page slowness, web research timeout). One known deferred: vol surface crash guard (mitigation added, root fix pending). Since 2026-06-26: a live-order bypass was found and closed - the paper-trading order route had no auth and accepted a caller-controlled `paper:false` flag, letting any request route straight to the live broker API around the paper-proven gate; the route is now authenticated and hard-rejects `paper=false`, and 10 bot admin endpoints (config, credentials, kill-switch, arm/disarm) are now locked behind a bot-admin allowlist (previously any authenticated user could arm live trading). New required user action: the bot-admin allowlist env var must be set or all bot write endpoints fail closed with a 403, including for the account owner. Also added: a public, cryptographically verifiable AI-call ledger page with independent RFC-3161 timestamping (a daily job gets a third-party timestamp authority to attest the ledger existed at a point in time, verifiable via `openssl ts -verify` without trusting the app's own server). Pre-launch blockers requiring user action: Stripe payment setup, Polygon.io license, Resend domain, legal ToS/Privacy Policy, Supabase migrations 010–015 must run before bot/live endpoints activate, ~9-week paper-proving window needed before go-live authorization. `PROJECT_REVIEW.md` (dated 2026-06-10) is now stale - it still lists the live-order bypass as an open finding.
 
 **README Claims:**
 - "282 features across 30 tabs" ✓
@@ -250,16 +251,16 @@ Frontend (Next.js 14 App Router):
 9. OSHA standard mapping on rules + auto-export Form 300/300A + ITA e-submission — full compliance automation
 
 **Honest Status:**  
-Prototype/MVP with extensive feature breadth. Docs claim "12 production-ready phases complete" but PROJECT_REVIEW.md lists 17 bugs in the hot path: timestamp-domain mismatch breaks clips (#1), shared ByteTrack state across cameras (#2), segment writer never reconnects on RTSP drop (#3), inference thread leaks on camera removal (#4), merge-window state never resets (#5), no GPU fallback (#6), publisher failures orphan clips (#7). Additionally 7 security issues: no tenant isolation RLS (#1), unauthenticated WebSockets (#2), CORS wildcard (#3), dev credentials baked in (#4). Alert delivery not guaranteed (no durable consumer group). Multi-camera correctness broken. **Not suitable for production as a safety product** without hardening the detect→alert→evidence spine first.
+Correction from the 2026-06-26 sync: the "17 bugs / 7 security issues" list below was already stale on its own dateline. `PROJECT_REVIEW.md` was dated 2026-06-10, but two hardening commits landed 2026-06-11 (`c32a3bd` "harden detect→alert→clip spine, tenancy", `d0c00ed` "org-scope all routers, add CI") that fixed nearly every item before the prior sync even ran: timestamp-domain mismatch (wall-clock stamping), shared ByteTrack state (per-camera instances), segment writer reconnect (ffmpeg watchdog), inference thread leak on camera removal, no GPU fallback (cuda→mps→cpu auto-select), publisher-orphaned clips (outbox replay), unauthenticated WebSockets (`?token=` required), CORS wildcard (configurable origins). Tenant isolation is fixed at the application level (org-scoping on every router) but **not** via actual Postgres row-level security as the original finding specifically asked for. Dev credentials are still baked in - `worker/pipeline/config.py:52-53` and `backend/app/config.py:41-42,89` still default to `minioadmin`/`minioadmin`. Since 2026-06-26: episode-aware activity dedup (`worker/pipeline/rules.py`) closes the remaining merge-window gap (continuous violations now survive ByteTrack id churn), and a self-healing rollup scheduler was added for audit trend backfill. `PROJECT_REVIEW.md` itself was deleted 2026-07-08 as part of a root-clutter cleanup, with no replacement doc - there is currently no authoritative, up-to-date bug list for this repo. README.md still says "12 production-ready phases complete." Given dev credentials still hardcoded and RLS still unimplemented, this should still not be treated as production-ready for a safety-critical deployment, but the correctness picture is substantially better than the prior sync recorded.
 
 **README Claims:**
-- "Enterprise-grade real-time CV safety monitoring for heavy manufacturing, automotive, and industrial facilities" ✓ Architecture supports this; correctness bugs block production use
-- "100+ concurrent cameras" — design target; correctness bugs break multi-camera in current code
+- "Enterprise-grade real-time CV safety monitoring for heavy manufacturing, automotive, and industrial facilities" ✓ Architecture supports this; correctness bugs mostly resolved as of 2026-06-11 (see Honest Status)
+- "100+ concurrent cameras" — design target; per-camera inference/tracking fixes since 06-11 address the multi-camera correctness bugs previously blocking this
 - "AI-powered failure analysis" ✓ Claude Vision integration working
 - "OSHA compliance automation" ✓ Form 300/300A, DART/TRIR, ITA e-submission implemented
-- "12 production-ready phases complete" — feature breadth real; production readiness overstated given PROJECT_REVIEW bugs
+- "12 production-ready phases complete" — feature breadth real; hardcoded dev credentials and app-level (not DB-level) tenant isolation remain open gaps
 - "Mobile PWA, wearable integration, integration hub (SAP, Maximo, Slack, Teams, Power BI, etc.)" ✓ All implemented
-- "Edge inference, cloud aggregation, multi-tenancy, Stripe billing" ✓ All present; multi-tenancy isolation not enforced at DB level
+- "Edge inference, cloud aggregation, multi-tenancy, Stripe billing" ✓ All present; multi-tenancy isolation enforced at app level, not DB-level RLS
 
 ---
 
@@ -341,7 +342,7 @@ catalog.yaml — 27 curated edge models with train/inference RAM budgets
 - `core/system_tiers.py` (87 LOC) — maps detected hardware → tier letter S/A/B/C/D, auto-recommends starter model
 
 **Real Metrics / Numbers from Code:**
-- 27 catalog models spanning 39M–7B parameters (SmolLM2-135M up to Phi-3.5-mini)
+- 30 catalog models spanning 39M–7B parameters (up from 27; SmolLM2-135M up to Phi-3.5-mini)
 - 6 export formats: GGUF (Q4_K_M, Q5_K_M, Q8_0, F16), MLX, Core ML, ONNX, TFLite, Ollama Modelfile
 - 5 LoRA variants: LoRA, QLoRA, DoRA, PiSSA, LoRA+
 - 2 training modes: SFT + DPO (no RLHF/PPO)
@@ -372,7 +373,7 @@ catalog.yaml — 27 curated edge models with train/inference RAM budgets
 8. Subprocess event streaming: live loss/memory/tokens-per-sec without polling — regex parses stdout into TrainEvent queue
 
 **Honest Status:**  
-Production-ready on Apple Silicon (MLX path fully battle-tested). CUDA path is beta: CPU-mode e2e validated in CI on every push; live GPU validation pending self-hosted runner. All SECURITY.md audit fixes merged (env whitelist, secret masking, image sandbox, server auth, sanitized crash reports, opt-in trust_remote_code). 101 unit tests passing. Remaining items (subprocess watchdog, hardcoded model IDs, admin-port auth, launcher duplication) are polish, not blockers. Known gaps: single-machine only (no multi-node), LoRA/QLoRA only (no full fine-tune), TurboQuant experimental.
+Production-ready on Apple Silicon (MLX path fully battle-tested). CUDA path is still explicitly beta for training (README: "live GPU runs still need a self-hosted CUDA runner") - but as of 2026-07-11 the export/inference side closed the Apple-only gap: a new torch-fuse path (`peft merge_and_unload` -> fp16 safetensors) lets quantize/export/chat run fully off Apple Silicon, with MLX-only quantization (N-bit packing, TurboQuant) now gated to Mac in the UI instead of failing. This closes the previously-flagged "single-machine, Mac-first" export limitation. Server mode gained named multi-user passwords (with live revocation via password file), fail-fast memory-constrained builds, gated run history for anonymous visitors, and optional TLS. Admin-port auth (previously flagged as a remaining polish item) turns out to already be fixed in code (loopback-only bind without admin credentials) - AUDIT_REPORT.md is stale on this point. All SECURITY.md audit fixes merged. 101 unit tests passing, plus 4 new routing tests for the fuse path. Known gaps: single-machine only (no multi-node), LoRA/QLoRA only (no full fine-tune), TurboQuant experimental and Mac-only, CUDA training itself still beta pending a self-hosted GPU CI runner.
 
 **README Claims:**
 - "Fine-tune small open-weight models (135M–7B parameters) on whatever hardware you have — Apple Silicon, NVIDIA CUDA, or CPU" ✓
@@ -490,7 +491,7 @@ User: claude "refactor auth module"
 - Max-tokens cap: QUERY_GRAPH→256, CONVERSATION→512, WRITING→2048
 - Extended thinking budget: 8,192 tokens added to PLANNING requests
 - Starvation cascade: 12 detection phrases; measured 2 auto-escalation events in 635-request session
-- Supported models: Anthropic (Haiku 4.5, Sonnet 4.6, Opus 4.7); OpenRouter (DeepSeek, OpenAI, others)
+- Supported models: Anthropic (Haiku 4.5, Sonnet 5, Opus 4.8 - updated 2026-07-07 from Sonnet 4.6/Opus 4.7); OpenRouter (DeepSeek, OpenAI, others)
 - Knowledge graph tested: up to 2,000 nodes; 3D viz loads <5s on modern browser
 
 **External Integrations / APIs Used:**
@@ -512,7 +513,7 @@ User: claude "refactor auth module"
 8. OpenRouter transparent support: single OPTIMALLM_UPSTREAM_BASE env var switches entire routing
 
 **Honest Status:**  
-Prototype/MVP with serious production-blocking bugs. Unit tests pass (classifier, graph, memory, guardrails, router all green), but PROJECT_REVIEW.md identifies 3 critical bugs: (1) request re-marshaling drops `stream` field → breaks SSE; (2) destructively replaces tool_results messages → causes upstream 400s in agentic loops; (3) canonicalizes prompt to single phrase, losing 90% of user intent. Additional HIGH bugs: auto-compact breaks tool_use/tool_result pairing; budget/graph-only responses return plain JSON to streaming clients. No shadow mode, unbounded memory growth (caches never evicted), session-ID mismatch breaks 3 feedback features. Security: broken proxy-token design (forwards proxy secret upstream), unauthenticated /ingest + /graph/* control surface, graph viz defaults 0.0.0.0:7778. README claims accurate *if* CRIT bugs are fixed; current code will break streaming and corrupt agentic conversations.
+Correction from the 2026-06-26 sync: the 3 CRIT bugs (stream field dropped, destructive tool_results replacement, prompt canonicalization) were actually already fixed on 2026-06-11 (commit "Fix all review-identified bugs: field preservation, tool_result safety, auth redesign") - the previous "Honest Status" entry was stale, sourced from a PROJECT_REVIEW.md snapshot that predates that fix. `go test ./internal/proxy/...` passes; a 07-08 commit added `release_test.go` (243 lines) as regression coverage locking in the already-correct behavior, plus an MIT LICENSE file. Model routing updated to claude-sonnet-5/claude-opus-4-8. One narrower fix since 06-26: HTTP body reads in the batch path are now bounded with a 32MB LimitReader - this does not address the separately-noted unbounded LRU cache growth in `internal/memory/memory.go`, which is unchanged. README's "Known Limitations & Gaps" section (README.md:762-780) still lists open bugs/gaps and does not claim release-ready status. Remaining known issues (unverified this pass, carried from prior review): unbounded memory growth (caches never evicted), broken proxy-token design (forwards proxy secret upstream), unauthenticated /ingest + /graph/* control surface, graph viz defaults 0.0.0.0:7778, session-ID mismatch breaking 3 feedback features.
 
 **README Claims:**
 - "A transparent reverse proxy that optimizes every Claude Code request before it reaches Anthropic's API" ✓ Accurate architecture
@@ -722,7 +723,7 @@ Frontend (Next.js 15 App Router):
 
 **Real Metrics / Numbers from Code:**
 - 19 test modules
-- 62+ passing tests (per PROJECT_REVIEW)
+- 160 passing tests (up from 151; per pytest, 2026-07-11)
 - 4 SLM task types: classify, extract, validate, format
 - 3 supermemory types: outcome, decision, contextual snapshot
 - 9 core API endpoints (/invoke, /invoke/stream, /invocations, /admin/*, /kg/*, /execute, /health)
@@ -752,10 +753,10 @@ Frontend (Next.js 15 App Router):
 8. Model registry + evaluation harness for benchmarking SLM vs LLM routing decisions
 
 **Honest Status:**  
-MVP+1 (April 2026). Core API, task graph, SLM pipeline, policy engine, audit signing, knowledge graph, supermemory, cost accounting, trust signals, human decision capture all shipped. NOT production-ready due to critical security gaps:
-- **Critical**: Tenant isolation unenforced (cross-tenant IDOR on all routes; TenantScopingMiddleware is no-op), admin RBAC missing on policy endpoints, OIDC broken (no discovery, claims unmapped, doesn't bypass APIKeyMiddleware), idempotency caches streaming responses (breaks SSE)
-- **High**: Frontend Dockerfile broken (copies non-existent /app/dist), default secrets boot in prod (`master_api_key="dev-master-key"`), webhook delivery disabled by default (arq off), CORS empty list in prod
-- **Medium**: Code execution endpoint open to any role, Terraform incomplete, Helm defaults unsafe (networkPolicy off, tag=latest)
+MVP+1, security hardening sprint completed 2026-07-11 (commit "mark production-readiness checklist complete"). Core API, task graph, SLM pipeline, policy engine, audit signing, knowledge graph, supermemory, cost accounting, trust signals, human decision capture all shipped. Since the 2026-06-26 sync, two commits closed the critical/high findings this doc previously listed:
+- **Fixed**: Tenant isolation now enforced (new `tenancy.py` resolves/checks tenant scope across invoke/invocations/analytics/KG/decisions/admin), admin RBAC required on all admin endpoints (tenant lifecycle is master-key only), production boot now refuses default `master_api_key`/`secret_key`/SQLite, webhook SSRF closed (scheme + private/loopback IP block), SCIM now fails closed with constant-time compare, frontend Dockerfile fixed (Next.js standalone build; dead Vite stack removed).
+- **Still open**: Anthropic API key rotation (tracked, unchecked in `tasks/todo.md`).
+- **Caveat**: `PROJECT_REVIEW.md` itself is unedited since 2026-06-10 and still reads "NOT production-ready" - that verdict is stale; the actual fix tracking lives in `tasks/todo.md`, now fully checked off. OIDC discovery/claims-mapping and idempotency-vs-SSE caching (both flagged in the original review) were not confirmed fixed or unfixed in this pass and should be re-verified before relying on the "production-ready" framing.
 
 **README Claims:**
 - "Enterprise AI execution fabric with governance, auditability, and multi-tenant access control" — governance + auditability mostly working; multi-tenant isolation NOT enforced
@@ -1496,7 +1497,7 @@ uninstall.sh (30 lines):
 4. Live repo checkout in plist: LaunchAgent points directly at repo source path — pragmatic for developer tool (updates automatically on git pull)
 
 **Honest Status:**  
-Prototype/MVP with known production bugs. Critical: stale/wrong pricing (missing Opus 4.8, Fable 5; wrong Haiku 4.5 rates causing 3× Opus cost overstatement); uninstall.sh doesn't actually uninstall (leaves PreToolUse hook in settings.json); UI mutations from background thread (undefined Cocoa behavior). Medium: timezone day-bucketing bug (UTC timestamps vs local `date.today()` → evening usage bleeds to tomorrow for US users); crash if `~/.claude/` doesn't exist; pip install hits PEP 668 on modern Python. No tests, no CI, no packaging.
+Prototype/MVP with known production bugs. Critical: stale/wrong pricing (missing Opus 4.8, Fable 5; wrong Haiku 4.5 rates causing 3× Opus cost overstatement); uninstall.sh doesn't actually uninstall (leaves PreToolUse hook in settings.json); UI mutations from background thread (undefined Cocoa behavior). Medium: timezone day-bucketing bug (UTC timestamps vs local `date.today()` → evening usage bleeds to tomorrow for US users); crash if `~/.claude/` doesn't exist; pip install hits PEP 668 on modern Python. No tests, no CI for correctness. As of 2026-06-27: py2app packaging (`setup.py`) and a GitHub Actions release workflow (`build_dmg.sh` → signed .dmg) were added — the app can now be built and distributed as a standalone macOS bundle instead of requiring `git clone` + `bash install.sh`; the underlying pricing/uninstall/threading bugs above are unaffected by this change.
 
 **README Claims:**
 - "A macOS menu bar app that reads your Claude Code session logs and shows live token usage and cost estimates — broken down by today, this month, and all time." ✓
@@ -1655,3 +1656,124 @@ Prototype/MVP — not production-ready. **Critical missing deps:** `cadquery` an
 
 **README Claims:**  
 No README.md exists. PROJECT_REVIEW.md is an audit document that explicitly flags production gaps: no tests, no CI, no Docker, no deployment manifest, critical missing dependencies.
+
+---
+
+## AetherOS
+
+**GitHub URL:** https://github.com/rs1990/aetheros  
+**Primary Language:** Rust (requires nightly for `allocator_api` feature; 2 trivial stable-compat fixes documented)  
+**Tech Stack:**
+- Language: Rust (workspace with 5 crates, ~5,000 LoC)
+- Runtime: Tokio (async agent runtime in aether-agents), crossbeam (unbounded channels + mailbox map)
+- IPC: no_std SPSC lock-free ring bus (aether-core/src/ipc.rs) + Tokio channel runtime (parallel, unconnected)
+- Storage: In-process VectorStore (cosine ANN) + VfsBridge (path trie to vector ID), no external DB
+- Cluster: SWIM-inspired gossip (heartbeat, failure detection), RDMA region bump allocator
+- Build: Cargo workspace; `cargo build --features aether-agents/network` for live crates.io checks
+
+**What it actually does:**  
+Architectural research prototype of an AI-native microkernel OS in Rust. Five workspace crates implement: a no_std microkernel with SPSC ring bus and Neural Intent Scheduler, a Neural HAL (device discovery, NPU/GPU abstraction, autonomous driver synthesis via MMIO probing), a Unified Semantic Data Fabric (vector-addressed storage with VFS bridge for legacy apps), a Ring-0 agent swarm (Synthesis/Orchestrator/Curator/MemoryOptimizer/LibraryUpdater/Janitor), and a cluster layer (SWIM gossip + RDMA region ledger). Not a bootable OS - all hardware paths are stubs.
+
+**Architecture:**
+```
+aetheros/
+aether-core    -- no_std microkernel: memory map (9 regions, 64-bit layout), zero-copy SPSC
+                  ring bus (1024 slots, cache-line padded), SystemAgent trait,
+                  NeuralIntentScheduler (5 priority tiers, KV-cache budget), memory pressure
+                  monitor (Normal/Elevated/Critical/OOM watermarks, callback dispatch)
+aether-hal     -- Neural HAL: DriverDiscovery trait, HalRegistry priority routing,
+                  NeuralDevice (ANE/Intel/NVIDIA stubs), JitPatchContext, AgentCompiler
+                  (MmioPattern classifier, TemplateCompiler), GPU/NPU memory pool
+                  (Hot/Warm/Cold tiers, LRU eviction, per-silicon PoolRegistry)
+aether-usdf    -- Unified Semantic Data Fabric: VectorStore (cosine ANN, per-namespace),
+                  VfsBridge (path trie to VectorId, semantic_open, readdir),
+                  AccessRegistry + RetentionPolicy (4 composable policies, eviction scoring)
+aether-agents  -- Ring-0 swarm on Tokio: AgentRuntime, AgentMailbox,
+                  SynthesisAgent (MMIO probe to DriverShim pipeline),
+                  OrchestratorAgent (compute ledger, hot-plug, cluster join),
+                  CuratorAgent (partition walk to USDF binding),
+                  MemoryOptimizerAgent (CPU+GPU pressure response, /proc/meminfo),
+                  LibraryUpdaterAgent (crates.io version checks, cargo update + rollback),
+                  JanitorAgent (5-pass sweep every 5 min, CleanupReport to USDF)
+aether-cluster -- SWIM-inspired gossip (NodeId, heartbeat, failure detection, GC),
+                  RDMA region registry (bump allocator, export/import/unmap)
+```
+
+**Key Technical Features:**
+1. Neural Intent Scheduler: 5 priority tiers with KV-cache as first-class scheduling resource; hot-plug for new devices without reboot
+2. Autonomous driver synthesis: SynthesisAgent probes unknown MMIO devices, classifies register patterns, generates DriverShim (Rust source + ELF stub), persists to Persona Overlay
+3. Unified Semantic Data Fabric: all storage addressed by embedding vectors; VfsBridge provides path-based access for legacy compatibility
+4. Ring-0 agent swarm: 6 agents (Synthesis, Orchestrator, Curator, MemoryOptimizer, LibraryUpdater, Janitor) running as Tokio tasks with typed mailboxes
+5. Three-tier GPU memory pool: Hot/Warm/Cold tiers per silicon (ANE/Intel NPU/Nvidia), LRU eviction with kind weighting, defrag
+6. SWIM-style gossip cluster: heartbeat failure detection, RDMA region ledger for cluster-scale compute sharing
+
+**Real Metrics / Numbers from Code:**
+- 5 workspace crates, ~5,000 LoC
+- 9 physical memory regions (15 MB kernel to 1 TB total address space)
+- 6 Ring-0 agents in aether-agents
+- 1,024-slot SPSC ring bus (lock-free, cache-line padded)
+- 4 memory pressure levels (Normal/Elevated/Critical/OOM)
+- 4 retention policy types (composable)
+- 28 improvement items identified in PROJECT_REVIEW.md (2026-06-10)
+- Build: FAILS on stable Rust -- 2 trivial errors (obsolete `feature(allocator_api)` gate + missing `alloc::boxed::Box` import); fix is 2 lines
+
+**Known Issues (from PROJECT_REVIEW.md, 2026-06-10):**
+- Two parallel unconnected bus implementations: no_std ring (ipc.rs) never used; actual runtime uses crossbeam + Mutex mailbox (copies every message, no backpressure)
+- SPSC ring bus is unsound as used: send(&self) allows multiple concurrent senders into one ring - data race papered over by unsafe impl Send/Sync
+- Agents do not share state they are documented to share (no_op bug in several agent interactions)
+- Build fails on stable Rust (2 trivial line fixes documented)
+- Not a runnable simulation - no transport, no JIT, no real I/O
+
+**Current Status:**  
+Architectural research prototype. All core traits, data structures, and agent pipelines are designed and implemented as a well-organized design document in Rust. 28 improvement items identified across severity levels; 2 build issues on stable Rust are trivial fixes already documented. The path from current codebase to a runnable userspace simulation is clear. Value is in the architecture and design decisions, not in producing a shipping OS.
+
+---
+
+## SYNC CHANGE LOG
+
+### 2026-06-26 Sync
+
+**Changes made to index.html:**
+- QuantTradeAI card: Replaced incorrect "Robinhood API" tag with "Redis/Celery" (project uses Alpaca for trading, not Robinhood; Redis + Celery are actual tech stack components)
+
+**Changes made to portfolio_data.md:**
+- Added AetherOS section (project is in portfolio but was missing from portfolio_data.md)
+- Updated Last Synced timestamp to 2026-06-26
+- Added this change log section
+
+**Per-project status (vs last sync 2026-06-24):**
+- quanttradeai: No changes. 310/310 tests, deployed.
+- SafetyEye: No changes. Hardening sprint ongoing.
+- slm-forge: No changes. 101 unit tests, Apple Silicon production-ready.
+- OptimaLLM: No changes. 3 critical bugs under active remediation.
+- SitAware: No changes. v0.4.0 prototype.
+- AurumAi: No changes. MVP+1, security hardening in progress.
+- supply-chain-intel: No changes. Deployed MVP on Render.
+- AetherOS: No code changes since initial commit (2026-05-02). portfolio_data.md added to repo (2026-06-25, no code change).
+
+**Repos reviewed but NOT in portfolio:**
+- SovereignGrid: Fully functional P2P inference grid (MVP). Could be portfolio-worthy -- presented to user for decision.
+- DocAI: Only ~25% complete (indexing/retrieval/LLM/agents all missing). Not portfolio-ready.
+- ClaudeCosts: macOS menu bar utility, not a showcase engineering project.
+- cad-converter: Prototype with critical missing deps (cadquery not in requirements.txt). Not portfolio-ready as-is.
+
+### 2026-07-15 Sync
+
+**Changes made to portfolio_data.md (6 repos with commits since 2026-06-26):**
+- AurumAi: Security hardening sprint completed 2026-07-11 -- tenant isolation, admin RBAC, default-secret boot guard, webhook SSRF, SCIM fail-open, and the broken frontend Dockerfile all fixed. `PROJECT_REVIEW.md` itself is unedited and still says "NOT production-ready" -- flagged as stale. Tests 151 -> 160.
+- quanttradeai: Found + closed a live-order bypass (unauthenticated route accepted a caller-controlled `paper:false` flag, routing straight to the live broker around the paper-proven gate). Added a public, RFC-3161-timestamped, cryptographically verifiable AI-call ledger page. Tests 310 -> 335.
+- OptimaLLM: **Correction** -- the 3 CRIT bugs recorded as open in the 06-26 sync were already fixed on 2026-06-11, before that sync ran; the prior entry was stale. Added MIT LICENSE, regression tests, bounded batch-read (32MB limit; does not fix the separately-noted unbounded LRU cache growth). Models updated to Sonnet 5 / Opus 4.8.
+- SafetyEye: **Correction** -- the "17 bugs / 7 security issues" list was also stale on its own dateline; a 2026-06-11 hardening pass (predating even the 06-26 sync) fixed nearly all of them. Tenant isolation is app-level org-scoping, not DB-level RLS as originally requested. Dev credentials (`minioadmin`/`minioadmin`) are still hardcoded. `PROJECT_REVIEW.md` was deleted 2026-07-08 with no replacement -- no current authoritative bug list exists for this repo.
+- slm-forge: New torch-fuse export path lets quantize/export/chat run fully off Apple Silicon (previously Mac-only for those steps); CUDA *training* itself is still explicitly beta. Server mode gained multi-user passwords with live revocation, fail-fast memory-constrained builds, and optional TLS. Catalog 27 -> 30 models.
+- ClaudeCosts: Added py2app packaging + GitHub Actions release workflow (signed .dmg). Underlying pricing/uninstall/threading bugs unaffected.
+- Updated Last Synced timestamp to 2026-07-15.
+
+**Per-project status (vs 2026-06-26 sync) for repos with no commits since then:**
+- SitAware: No changes (last commit 2026-06-10, predates prior sync).
+- supply-chain-intel: No changes (last commit 2026-06-21, predates prior sync).
+- DocAI, cad-converter, AetherOS, SovereignGrid: No file changes since 2026-06-26 sync (checked via `find -newer`; only `.DS_Store` touched).
+
+**Repos found on disk NOT covered by this file (see index.html sync report for the full missing-repo list with portfolio-worthiness notes):**
+- clawstreet, WayTale, graphify-out, SakhiVerify -- none had a portfolio_data.md entry before this sync; not investigated in depth here since Phase 4 of this run only required listing them for human review, not full deep-dives. bloomberg-terminal is the same repo as quanttradeai (its GitHub remote), not a separate project.
+
+**index.html changes made this sync:** see commit for the specific diff -- existing project cards' description bullets, tags, and "Current Status" case-study text updated to match the corrections above. No new project cards added (missing-repo list requires human decision first).
