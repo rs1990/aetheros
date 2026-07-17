@@ -1,0 +1,47 @@
+{
+  "expo": {
+    "name": "WayTale",
+    "slug": "waytale",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.waytale.app",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "WayTale uses your location to find nearby landmarks and trigger audio narration as you travel.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "WayTale uses your location in the background to narrate landmarks during an active tour.",
+        "NSMicrophoneUsageDescription": "Not required — WayTale only plays audio, it does not record."
+      }
+    },
+    "android": {
+      "package": "com.waytale.app",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION"
+      ],
+      "adaptiveIcon": {
+        "backgroundColor": "#1E293B",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "WayTale uses your location to find nearby landmarks and play narration during tours."
+        }
+      ]
+    ],
+    "extra": {
+      "apiUrl": "http://localhost:3001"
+    }
+  }
+}

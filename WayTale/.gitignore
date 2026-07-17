@@ -1,0 +1,9 @@
+node_modules/
+.env
+*.mp3
+audio_cache/
+.expo/
+dist/
+build/
+*.log
+.DS_Store
