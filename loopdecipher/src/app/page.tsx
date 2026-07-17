@@ -12,6 +12,7 @@ import type { DecipherRequest, DecipherResult } from "@/lib/types";
 
 export default function Home() {
   const [result, setResult] = useState<DecipherResult | null>(null);
+  const [lastRequest, setLastRequest] = useState<DecipherRequest | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,6 +31,7 @@ export default function Home() {
       }
       const data = (await res.json()) as DecipherResult;
       setResult(data);
+      setLastRequest(payload);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
@@ -65,7 +67,12 @@ export default function Home() {
           <LoopTimeline schedule={result.studySchedule} />
           <div className="grid gap-10 lg:grid-cols-3">
             <div className="lg:col-span-2">
-              <QuestionBank questions={result.questions} />
+              <QuestionBank
+                questions={result.questions}
+                companyName={lastRequest?.companyName}
+                roleName={lastRequest?.roleName}
+                resumeText={lastRequest?.resumeText}
+              />
             </div>
             <div className="space-y-8">
               <CultureDecoder insights={result.cultureInsights} />

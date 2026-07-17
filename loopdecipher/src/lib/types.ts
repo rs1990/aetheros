@@ -52,3 +52,25 @@ export interface ForumSnippet {
   source: ForumSourceName;
   url: string;
 }
+
+export interface AnswerRequest {
+  questionId: string;
+  questionText: string;
+  category: QuestionCategory;
+  difficulty: Difficulty;
+  companyName?: string;
+  roleName?: string;
+  resumeText?: string;
+}
+
+export interface AnswerSource {
+  title: string;
+  url: string;
+}
+
+export interface AnswerResult {
+  answer: string;
+  sources: AnswerSource[];
+  diagram?: string;
+  model: string;
+}

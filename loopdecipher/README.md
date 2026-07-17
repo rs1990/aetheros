@@ -41,6 +41,27 @@ Open http://localhost:3000.
   returns a synthesized guide with forum-verified questions flagged. Reddit and GitHub credentials
   are optional — the app degrades gracefully to whichever sources have credentials configured.
 
+## Getting an answer to a question
+
+Every question in the bank has a **Get answer** button. Click it and the app calls
+`/api/answer` (requires `ANTHROPIC_API_KEY` — there's no mock mode for this one, since a fake
+answer would defeat the point) and returns:
+
+- A full spoken-style answer, grounded in your resume for behavioral questions
+- A "Key concepts" explanation of the underlying ideas, not just the answer
+- A Mermaid architecture diagram for System Design questions, rendered inline
+- A **Sources** list — real URLs, only when the model actually searched for them
+
+### Model routing (cost vs. accuracy)
+
+| Category | Model | Why |
+|---|---|---|
+| Behavioral | `claude-haiku-4-5` | Synthesized from facts you already gave it (your resume) — low hallucination risk, so the cheap/fast model is enough. |
+| Technical / Coding / System Design | `claude-sonnet-5` + web search (auto, capped at 3 uses) | Asserting CS facts and tradeoffs is where hallucination actually bites. Sonnet only reaches for `web_search` when it isn't already confident — classic algorithms and textbook complexity get answered directly; company-specific or fast-changing claims get verified first. |
+
+The system prompt explicitly forbids inventing citations: if Claude didn't search, the Sources
+section says so instead of fabricating a URL.
+
 ## Getting API credentials
 
 | Service | Where | Cost |
@@ -60,9 +81,12 @@ loopdecipher/
 ├── src/
 │   ├── app/
 │   │   ├── layout.tsx, page.tsx      Dashboard shell
-│   │   └── api/decipher/route.ts     Dual-mode synthesis endpoint
-│   ├── components/                   InputForm, QuestionBank, CultureDecoder,
-│   │                                 PitchGenerator, StudySchedule, AudioSandbox, LoopTimeline
+│   │   └── api/
+│   │       ├── decipher/route.ts     Dual-mode synthesis endpoint (mock/live)
+│   │       └── answer/route.ts       Per-question answer generation (live only)
+│   ├── components/                   InputForm, QuestionBank, AnswerPanel, MermaidDiagram,
+│   │                                 CultureDecoder, PitchGenerator, StudySchedule,
+│   │                                 AudioSandbox, LoopTimeline
 │   └── lib/
 │       ├── scraper.ts                Reddit/HN/GitHub API clients
 │       ├── mockEngine.ts             100-question offline baseline

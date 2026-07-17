@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Card from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
+import AnswerPanel from "@/components/AnswerPanel";
 import type { Difficulty, Question, QuestionCategory } from "@/lib/types";
 
 const CATEGORIES: QuestionCategory[] = ["Technical", "System Design", "Coding", "Behavioral"];
@@ -14,7 +15,14 @@ const DIFFICULTY_COLOR: Record<Difficulty, string> = {
   Hard: "text-red-400 border-red-800 bg-red-950/40",
 };
 
-export default function QuestionBank({ questions }: { questions: Question[] }) {
+interface QuestionBankProps {
+  questions: Question[];
+  companyName?: string;
+  roleName?: string;
+  resumeText?: string;
+}
+
+export default function QuestionBank({ questions, companyName, roleName, resumeText }: QuestionBankProps) {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<QuestionCategory | "All">("All");
   const [difficulty, setDifficulty] = useState<Difficulty | "All">("All");
@@ -110,6 +118,15 @@ export default function QuestionBank({ questions }: { questions: Question[] }) {
                   </span>
                 )}
               </div>
+              <AnswerPanel
+                questionId={q.id}
+                questionText={q.text}
+                category={q.category}
+                difficulty={q.difficulty}
+                companyName={companyName}
+                roleName={roleName}
+                resumeText={resumeText}
+              />
             </div>
           </li>
         ))}
