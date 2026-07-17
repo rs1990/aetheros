@@ -38,11 +38,24 @@ export interface DecipherRequest {
   resumeText?: string;
 }
 
+export type InterviewRoundSource = "forum-sourced" | "typical";
+
+export interface InterviewRound {
+  order: number;
+  name: string;
+  format: string;
+  focus: string[];
+  sampleQuestionIds: string[];
+  source: InterviewRoundSource;
+  sourceDetail?: string;
+}
+
 export interface DecipherResult {
   questions: Question[];
   cultureInsights: CultureInsight[];
   mustKnowTech: string[];
   studySchedule: StudyWeek[];
+  interviewLoop: InterviewRound[];
   mode: "live" | "mock";
 }
 

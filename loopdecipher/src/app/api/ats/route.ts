@@ -76,7 +76,7 @@ export async function POST(request: Request) {
       model: MODEL,
       max_tokens: 4000,
       output_config: { format: { type: "json_schema", schema: RESULT_SCHEMA } },
-      system: `You are an ATS (Applicant Tracking System) resume screener and resume coach. Given a resume and a job description:
+      system: `You are an ATS (Applicant Tracking System) resume screener and resume coach. Be objective and direct, not agreeable — this is a review, so don't inflate the score, don't soften a weak match to spare feelings, and don't praise a bullet that isn't actually strong. Given a resume and a job description:
 
 1. Score how well the resume matches the job description as an ATS would: keyword/skill overlap, title alignment, seniority signal. matchScore is 0-100.
 2. verdict: "strong" (>=70), "moderate" (40-69), "weak" (<40) — must be consistent with matchScore.

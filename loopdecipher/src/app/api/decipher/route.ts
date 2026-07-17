@@ -57,8 +57,25 @@ const RESULT_SCHEMA = {
         additionalProperties: false,
       },
     },
+    interviewLoop: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          order: { type: "integer" },
+          name: { type: "string" },
+          format: { type: "string" },
+          focus: { type: "array", items: { type: "string" } },
+          sampleQuestionIds: { type: "array", items: { type: "string" } },
+          source: { type: "string", enum: ["forum-sourced", "typical"] },
+          sourceDetail: { type: "string" },
+        },
+        required: ["order", "name", "format", "focus", "sampleQuestionIds", "source"],
+        additionalProperties: false,
+      },
+    },
   },
-  required: ["questions", "cultureInsights", "mustKnowTech", "studySchedule"],
+  required: ["questions", "cultureInsights", "mustKnowTech", "studySchedule", "interviewLoop"],
   additionalProperties: false,
 } as const;
 
@@ -118,12 +135,17 @@ export async function POST(request: Request) {
       model: MODEL,
       max_tokens: 16000,
       output_config: { format: { type: "json_schema", schema: RESULT_SCHEMA } },
-      system: `You are an expert technical interview coach. You merge three data layers into a single personalized study guide:
+      system: `You are an expert technical interview coach. Be objective and direct, not agreeable — don't inflate a candidate's readiness, don't soften a skill gap, and don't present a guess as verified fact. You merge three data layers into a single personalized study guide:
 1. The job description — extract must-know technologies and domains.
 2. Real forum-sourced interview reports — when a snippet describes an actual asked question or theme (e.g. "they asked me to build an in-memory database"), generate a close variation of that exact challenge and mark it source: "forum-sourced" with sourceDetail citing the snippet's source/url.
 3. The candidate's resume — identify skill gaps relative to the role and weight questions toward those gaps.
 
-Generate approximately 100 questions spanning Behavioral, Coding, System Design, and Technical categories, with a realistic Easy/Medium/Hard spread. Only mark a question "forum-sourced" if it is a direct variation of something in the provided forum snippets — everything else is "predicted". Also produce 3-6 culture insights (from forum tone/content, or general reasonable inference if no forum data), and a 4-6 week study schedule.`,
+Generate approximately 100 questions spanning Behavioral, Coding, System Design, and Technical categories, with a realistic Easy/Medium/Hard spread. Only mark a question "forum-sourced" if it is a direct variation of something in the provided forum snippets — everything else is "predicted". Also produce 3-6 culture insights (from forum tone/content, or general reasonable inference if no forum data), and a 4-6 week study schedule.
+
+Also produce interviewLoop: the actual sequence of interview rounds a candidate for this role at this company should expect, ordered 1..N.
+- If the forum snippets describe the company's real process (e.g. "phone screen then 5 onsite rounds: 2 coding, 1 system design, 1 behavioral, 1 bar raiser"), reconstruct that loop faithfully and mark each round source: "forum-sourced" with sourceDetail citing which snippet it came from. Do not embellish beyond what the snippets actually describe.
+- If no forum data describes the process, build a realistic loop from the role level and domain implied by the job description (e.g. a senior IC backend role typically means recruiter screen, technical phone screen, then an onsite with coding, system design, and behavioral rounds; an entry-level role is usually shorter). Mark these rounds source: "typical" — do not claim company-specific knowledge you don't have.
+- Each round needs: a name (e.g. "Round 2: Technical Phone Screen"), a format (duration, interviewer count, medium — coding platform, whiteboard, take-home, etc., stated plainly, not invented with false precision if unknown), 1-3 focus areas, and sampleQuestionIds referencing 1-4 ids from the questions array that best represent what that round would actually cover. Every id in sampleQuestionIds MUST be an id that literally appears in the questions array you generated in this same response — never invent an id that isn't there.`,
       messages: [
         {
           role: "user",
@@ -147,6 +169,11 @@ ${resumeText ? `Candidate Resume:\n${resumeText}` : "No resume provided — skip
     }
 
     const parsed = JSON.parse(textBlock.text) as Omit<DecipherResult, "mode">;
+    const validQuestionIds = new Set(parsed.questions.map((q) => q.id));
+    parsed.interviewLoop = parsed.interviewLoop.map((round) => ({
+      ...round,
+      sampleQuestionIds: round.sampleQuestionIds.filter((id) => validQuestionIds.has(id)),
+    }));
     const result: DecipherResult = { ...parsed, mode: "live" };
     return NextResponse.json(result);
   } catch (error) {

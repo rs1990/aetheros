@@ -1,4 +1,4 @@
-import type { AtsResult, CultureInsight, Difficulty, Question, QuestionCategory, StudyWeek } from "./types";
+import type { AtsResult, CultureInsight, Difficulty, InterviewRound, Question, QuestionCategory, StudyWeek } from "./types";
 
 interface RawQuestion {
   text: string;
@@ -160,12 +160,56 @@ export const MOCK_STUDY_SCHEDULE: StudyWeek[] = [
   { week: 5, focus: "Polish & Company Research", tasks: ["Research the company's recent product launches", "Prepare 5 thoughtful questions for the interviewer", "Do a final pass on your top 10 weakest topics"] },
 ];
 
+const MOCK_INTERVIEW_LOOP: InterviewRound[] = [
+  {
+    order: 1,
+    name: "Round 1: Recruiter Screen",
+    format: "30 min, phone/video, 1 recruiter — no live coding",
+    focus: ["Background and motivation", "Logistics and comp expectations"],
+    sampleQuestionIds: ["mock-20"],
+    source: "typical",
+  },
+  {
+    order: 2,
+    name: "Round 2: Technical Phone Screen",
+    format: "45-60 min, video, 1 engineer, shared coding editor",
+    focus: ["Data structures fundamentals", "Problem-solving under time pressure"],
+    sampleQuestionIds: ["mock-21", "mock-26"],
+    source: "typical",
+  },
+  {
+    order: 3,
+    name: "Round 3: Onsite — Coding",
+    format: "45-60 min, 1 interviewer, live coding, medium-to-hard difficulty",
+    focus: ["Algorithm design", "Code correctness and edge cases"],
+    sampleQuestionIds: ["mock-38", "mock-45"],
+    source: "typical",
+  },
+  {
+    order: 4,
+    name: "Round 4: Onsite — System Design",
+    format: "45-60 min, 1-2 interviewers, whiteboard/collaborative doc",
+    focus: ["Scalability tradeoffs", "API and data model design"],
+    sampleQuestionIds: ["mock-53", "mock-58"],
+    source: "typical",
+  },
+  {
+    order: 5,
+    name: "Round 5: Onsite — Behavioral & Technical Deep-Dive",
+    format: "45 min, 1 interviewer, conversational",
+    focus: ["Past project depth", "Team collaboration and conflict handling"],
+    sampleQuestionIds: ["mock-6", "mock-90"],
+    source: "typical",
+  },
+];
+
 export function buildMockResult(mustKnowTech: string[]) {
   return {
     questions: MOCK_QUESTIONS,
     cultureInsights: MOCK_CULTURE_INSIGHTS,
     mustKnowTech,
     studySchedule: MOCK_STUDY_SCHEDULE,
+    interviewLoop: MOCK_INTERVIEW_LOOP,
     mode: "mock" as const,
   };
 }

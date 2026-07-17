@@ -9,6 +9,7 @@ import PitchGenerator from "@/components/PitchGenerator";
 import StudySchedule from "@/components/StudySchedule";
 import AudioSandbox from "@/components/AudioSandbox";
 import ResumeOptimizer from "@/components/ResumeOptimizer";
+import InterviewLoop from "@/components/InterviewLoop";
 import type { DecipherRequest, DecipherResult } from "@/lib/types";
 
 export default function Home() {
@@ -66,6 +67,7 @@ export default function Home() {
             </div>
           )}
           <LoopTimeline schedule={result.studySchedule} />
+          <InterviewLoop rounds={result.interviewLoop} questions={result.questions} />
           <div className="grid gap-10 lg:grid-cols-3">
             <div className="lg:col-span-2">
               <QuestionBank
