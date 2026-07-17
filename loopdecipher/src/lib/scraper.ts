@@ -20,7 +20,7 @@ async function getRedditToken(): Promise<string | null> {
     headers: {
       Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString("base64")}`,
       "Content-Type": "application/x-www-form-urlencoded",
-      "User-Agent": "LoopDecipher/1.0 (interview-prep-tool)",
+      "User-Agent": "Intervue/1.0 (interview-prep-tool)",
     },
     body: "grant_type=client_credentials",
   });
@@ -44,7 +44,7 @@ async function fetchRedditThreads(company: string, role: string): Promise<ForumS
       {
         headers: {
           Authorization: `Bearer ${token}`,
-          "User-Agent": "LoopDecipher/1.0 (interview-prep-tool)",
+          "User-Agent": "Intervue/1.0 (interview-prep-tool)",
         },
       },
     );
@@ -72,7 +72,7 @@ async function fetchHackerNews(company: string, role: string): Promise<ForumSnip
   const query = `${company} ${role} interview`;
   const res = await fetch(
     `${HN_ENDPOINT}?query=${encodeURIComponent(query)}&tags=comment&hitsPerPage=10`,
-    { headers: { "User-Agent": "LoopDecipher/1.0 (interview-prep-tool)" } },
+    { headers: { "User-Agent": "Intervue/1.0 (interview-prep-tool)" } },
   );
   if (!res.ok) return [];
 
@@ -93,7 +93,7 @@ async function fetchGitHubCompanyQuestions(company: string): Promise<ForumSnippe
   const token = process.env.GITHUB_TOKEN;
   const headers: Record<string, string> = {
     Accept: "application/vnd.github+json",
-    "User-Agent": "LoopDecipher/1.0 (interview-prep-tool)",
+    "User-Agent": "Intervue/1.0 (interview-prep-tool)",
   };
   if (token) headers.Authorization = `Bearer ${token}`;
 

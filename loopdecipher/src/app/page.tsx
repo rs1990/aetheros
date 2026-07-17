@@ -44,7 +44,7 @@ export default function Home() {
   return (
     <main className="mx-auto max-w-6xl px-6 py-12">
       <header className="mb-10 text-center">
-        <h1 className="text-4xl font-bold tracking-tight text-slate-100">LoopDecipher</h1>
+        <h1 className="text-4xl font-bold tracking-tight text-slate-100">Intervue</h1>
         <p className="mt-2 text-slate-400">
           Paste a job posting. Get a personalized, forum-verified interview study guide.
         </p>

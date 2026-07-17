@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "LoopDecipher — Real-World Interview Prep",
+  title: "Intervue — Real-World Interview Prep",
   description:
     "Turn a job posting into a personalized, forum-verified interview study guide.",
 };

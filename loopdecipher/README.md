@@ -1,6 +1,6 @@
-# LoopDecipher
+# Intervue
 
-Turn a job posting into a personalized interview study guide. LoopDecipher pulls a job description
+Turn a job posting into a personalized interview study guide. Intervue pulls a job description
 apart to find the must-know technologies, cross-references real interview discussion from public,
 API-accessible sources (Reddit, Hacker News, and community-maintained GitHub question banks), and
 uses Claude to merge it all into a ~100-question study plan — separating **forum-verified**
@@ -72,7 +72,7 @@ section says so instead of fabricating a URL.
 
 ## Deploy
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/YOUR_USERNAME/loopdecipher&env=ANTHROPIC_API_KEY,REDDIT_CLIENT_ID,REDDIT_CLIENT_SECRET,GITHUB_TOKEN&envDescription=API%20keys%20used%20for%20live%20synthesis%20and%20forum%20scraping.%20Leave%20blank%20for%20mock%20mode.)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/YOUR_USERNAME/intervue&env=ANTHROPIC_API_KEY,REDDIT_CLIENT_ID,REDDIT_CLIENT_SECRET,GITHUB_TOKEN&envDescription=API%20keys%20used%20for%20live%20synthesis%20and%20forum%20scraping.%20Leave%20blank%20for%20mock%20mode.)
 
 ## Architecture
 

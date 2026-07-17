@@ -11,7 +11,7 @@ npm run dev &
 DEV_PID=$!
 trap 'kill "$DEV_PID" 2>/dev/null' EXIT
 
-echo "Starting LoopDecipher..."
+echo "Starting Intervue..."
 until curl -s -o /dev/null http://localhost:3000; do
   sleep 0.5
 done
