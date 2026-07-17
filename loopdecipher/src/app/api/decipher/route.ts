@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { scrapeForumSnippets } from "@/lib/scraper";
+import { fetchJobDescriptionFromUrl } from "@/lib/fetchJobPosting";
 import { buildMockResult } from "@/lib/mockEngine";
+import { isMockMode } from "@/lib/mode";
 import type { DecipherRequest, DecipherResult } from "@/lib/types";
 
 const MODEL = process.env.ANTHROPIC_MODEL || "claude-opus-4-8";
@@ -73,24 +75,30 @@ function extractMustKnowTech(jobDescription: string): string[] {
   return found.length > 0 ? found : ["Core CS Fundamentals", "System Design"];
 }
 
-function isMockMode(): boolean {
-  return (
-    process.env.NEXT_PUBLIC_USE_MOCK_MODE === "true" || !process.env.ANTHROPIC_API_KEY
-  );
-}
-
 export async function POST(request: Request) {
   const body = (await request.json()) as DecipherRequest;
-  const { jobDescription, companyName, roleName, resumeText } = body;
+  const { jobUrl, companyName, roleName, resumeText } = body;
+  let jobDescription = body.jobDescription;
 
-  if (!jobDescription || !companyName || !roleName) {
+  if (!companyName || !roleName || (!jobDescription && !jobUrl)) {
     return NextResponse.json(
-      { error: "jobDescription, companyName, and roleName are required." },
+      { error: "companyName, roleName, and either jobDescription or jobUrl are required." },
       { status: 400 },
     );
   }
 
-  const mustKnowTech = extractMustKnowTech(jobDescription);
+  if (!jobDescription && jobUrl) {
+    try {
+      jobDescription = await fetchJobDescriptionFromUrl(jobUrl);
+    } catch (err) {
+      return NextResponse.json(
+        { error: err instanceof Error ? err.message : "Failed to fetch the job posting URL." },
+        { status: 422 },
+      );
+    }
+  }
+
+  const mustKnowTech = extractMustKnowTech(jobDescription!);
 
   if (isMockMode()) {
     return NextResponse.json(buildMockResult(mustKnowTech));

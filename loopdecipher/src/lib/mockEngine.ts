@@ -1,4 +1,4 @@
-import type { CultureInsight, Difficulty, Question, QuestionCategory, StudyWeek } from "./types";
+import type { AtsResult, CultureInsight, Difficulty, Question, QuestionCategory, StudyWeek } from "./types";
 
 interface RawQuestion {
   text: string;
@@ -167,5 +167,75 @@ export function buildMockResult(mustKnowTech: string[]) {
     mustKnowTech,
     studySchedule: MOCK_STUDY_SCHEDULE,
     mode: "mock" as const,
+  };
+}
+
+const STOPWORDS = new Set([
+  "the", "and", "for", "with", "you", "our", "are", "will", "have", "this",
+  "that", "from", "your", "who", "role", "job", "team", "work", "years",
+  "experience", "ability", "including", "such", "using", "able", "than",
+  "into", "not", "all", "can", "has", "been", "may", "any", "per", "etc",
+]);
+
+function extractKeywords(text: string): string[] {
+  const words = text
+    .replace(/[^a-zA-Z0-9+#.\s]/g, " ")
+    .split(/\s+/)
+    .map((w) => w.trim().replace(/^\.+|\.+$/g, ""))
+    .filter((w) => w.length > 2 && !STOPWORDS.has(w.toLowerCase()));
+  return Array.from(new Set(words));
+}
+
+export function buildMockAtsResult(
+  resumeText: string,
+  jobDescription: string,
+): Omit<AtsResult, "mode"> {
+  const jobKeywords = extractKeywords(jobDescription).slice(0, 40);
+  const resumeLower = resumeText.toLowerCase();
+
+  const matchedKeywords = jobKeywords.filter((k) => resumeLower.includes(k.toLowerCase()));
+  const missingKeywords = jobKeywords.filter((k) => !resumeLower.includes(k.toLowerCase()));
+
+  const matchScore = jobKeywords.length
+    ? Math.round((matchedKeywords.length / jobKeywords.length) * 100)
+    : 0;
+  const verdict = matchScore >= 70 ? "strong" : matchScore >= 40 ? "moderate" : "weak";
+
+  const formattingWarnings: string[] = [];
+  if (resumeText.length < 400) {
+    formattingWarnings.push("Resume looks short for ATS parsing — most parsers expect a full page of content.");
+  }
+  if (!/\n/.test(resumeText.trim())) {
+    formattingWarnings.push("No line breaks detected — ATS parsers rely on line structure to separate sections and bullets.");
+  }
+  if (!/@/.test(resumeText)) {
+    formattingWarnings.push("No email address detected — make sure contact info is in plain text, not an image or header/footer.");
+  }
+
+  const bulletRewrites = resumeText
+    .split("\n")
+    .map((l) => l.trim())
+    .filter((l) => l.length > 20 && l.length < 200)
+    .slice(0, 3)
+    .map((original) => {
+      const stripped = original.replace(/^[-•*]\s*/, "");
+      const hasStrongVerb = /^(Led|Built|Designed|Shipped|Reduced|Increased|Owned|Drove)/i.test(stripped);
+      return {
+        original,
+        rewritten: hasStrongVerb
+          ? stripped
+          : `Led/Built/Drove: ${stripped} — quantify the impact with a metric if you have one.`,
+        reason: "Starting with a strong action verb and a measurable outcome scans better on both ATS keyword matching and human skim-review.",
+      };
+    });
+
+  return {
+    matchScore,
+    verdict,
+    matchedKeywords: matchedKeywords.slice(0, 25),
+    missingKeywords: missingKeywords.slice(0, 20),
+    formattingWarnings,
+    bulletRewrites,
+    summary: `Local-first mock scoring: ${matchedKeywords.length}/${jobKeywords.length} job-description keywords found in the resume. Add ANTHROPIC_API_KEY for a real semantic match instead of keyword overlap.`,
   };
 }

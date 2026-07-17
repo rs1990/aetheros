@@ -8,6 +8,7 @@ import CultureDecoder from "@/components/CultureDecoder";
 import PitchGenerator from "@/components/PitchGenerator";
 import StudySchedule from "@/components/StudySchedule";
 import AudioSandbox from "@/components/AudioSandbox";
+import ResumeOptimizer from "@/components/ResumeOptimizer";
 import type { DecipherRequest, DecipherResult } from "@/lib/types";
 
 export default function Home() {
@@ -83,6 +84,15 @@ export default function Home() {
           <AudioSandbox />
         </div>
       )}
+
+      <div className="mt-12">
+        <ResumeOptimizer
+          initialResumeText={lastRequest?.resumeText}
+          initialJobDescription={lastRequest?.jobDescription}
+          initialCompanyName={lastRequest?.companyName}
+          initialRoleName={lastRequest?.roleName}
+        />
+      </div>
     </main>
   );
 }

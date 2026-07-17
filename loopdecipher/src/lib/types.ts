@@ -31,7 +31,8 @@ export interface StudyWeek {
 }
 
 export interface DecipherRequest {
-  jobDescription: string;
+  jobDescription?: string;
+  jobUrl?: string;
   companyName: string;
   roleName: string;
   resumeText?: string;
@@ -73,4 +74,31 @@ export interface AnswerResult {
   sources: AnswerSource[];
   diagram?: string;
   model: string;
+}
+
+export interface AtsRequest {
+  resumeText: string;
+  jobDescription?: string;
+  jobUrl?: string;
+  companyName?: string;
+  roleName?: string;
+}
+
+export type AtsVerdict = "strong" | "moderate" | "weak";
+
+export interface BulletRewrite {
+  original: string;
+  rewritten: string;
+  reason: string;
+}
+
+export interface AtsResult {
+  matchScore: number;
+  verdict: AtsVerdict;
+  matchedKeywords: string[];
+  missingKeywords: string[];
+  formattingWarnings: string[];
+  bulletRewrites: BulletRewrite[];
+  summary: string;
+  mode: "live" | "mock";
 }
