@@ -4,6 +4,7 @@ import { useState } from "react";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import { Input, Textarea } from "@/components/ui/Input";
+import { parseResumeFile } from "@/lib/parseResumeFile";
 import type { AtsRequest, AtsResult, AtsVerdict } from "@/lib/types";
 
 const VERDICT_STYLE: Record<AtsVerdict, string> = {
@@ -65,13 +66,14 @@ export default function ResumeOptimizer({
   const [error, setError] = useState<string | null>(null);
 
   async function handleResumeFile(file: File) {
-    if (!file.type.startsWith("text/") && !file.name.endsWith(".txt")) {
-      setResumeFileName(`${file.name} (only .txt parsing supported — paste text instead for PDFs)`);
-      return;
+    setResumeFileName(`Parsing ${file.name}...`);
+    try {
+      const text = await parseResumeFile(file);
+      setResumeText(text);
+      setResumeFileName(file.name);
+    } catch (err) {
+      setResumeFileName(`${file.name} — ${err instanceof Error ? err.message : "failed to parse"}`);
     }
-    const text = await file.text();
-    setResumeText(text);
-    setResumeFileName(file.name);
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -158,7 +160,7 @@ export default function ResumeOptimizer({
         </div>
 
         <div>
-          <label className="mb-1 block text-sm text-slate-400">Resume (paste text or upload .txt)</label>
+          <label className="mb-1 block text-sm text-slate-400">Resume (paste text or upload .txt, .pdf, or .docx)</label>
           <Textarea
             value={resumeText}
             onChange={(e) => setResumeText(e.target.value)}
@@ -168,7 +170,7 @@ export default function ResumeOptimizer({
           <div className="mt-2 flex items-center gap-3">
             <input
               type="file"
-              accept=".txt,text/plain"
+              accept=".txt,.pdf,.docx,text/plain,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
               onChange={(e) => e.target.files?.[0] && handleResumeFile(e.target.files[0])}
               className="text-xs text-slate-400 file:mr-3 file:rounded-md file:border-0 file:bg-slate-800 file:px-3 file:py-1.5 file:text-slate-200 hover:file:bg-slate-700"
             />
